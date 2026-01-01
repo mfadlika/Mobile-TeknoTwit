@@ -1,21 +1,75 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image as RNImage,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [postCount, setPostCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      // Get logged-in user ID from AsyncStorage
+      const userId = await AsyncStorage.getItem("userId");
+
+      if (!userId) {
+        // No user logged in, redirect to login
+        router.replace("/login");
+        return;
+      }
+
+      // Fetch user data by ID
+      const userResponse = await fetch(API_ENDPOINTS.GET_USER_BY_ID(userId));
+      const userData = await userResponse.json();
+
+      if (userResponse.ok) {
+        setUser(userData);
+
+        // Fetch posts count for this user
+        const postsResponse = await fetch(API_ENDPOINTS.GET_POSTS);
+        const posts = await postsResponse.json();
+
+        if (postsResponse.ok) {
+          const userPosts = posts.filter(
+            (post: any) => post.userId === parseInt(userId)
+          );
+          setPostCount(userPosts.length);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -26,10 +80,10 @@ export default function ProfileScreen() {
       },
       {
         text: "Logout",
-        onPress: () => {
-          // TODO: Clear stored tokens/user data
-          // await AsyncStorage.removeItem('token');
-          // await AsyncStorage.removeItem('userId');
+        onPress: async () => {
+          // Clear stored tokens/user data
+          await AsyncStorage.removeItem("token");
+          await AsyncStorage.removeItem("userId");
 
           router.replace("/login");
         },
@@ -37,6 +91,36 @@ export default function ProfileScreen() {
       },
     ]);
   };
+
+  if (isLoading) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Profile
+          </ThemedText>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" />
+        </View>
+      </ThemedView>
+    );
+  }
+
+  if (!user) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Profile
+          </ThemedText>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ThemedText>No user data found</ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -46,63 +130,69 @@ export default function ProfileScreen() {
         </ThemedText>
       </View>
 
-      <View style={styles.profileSection}>
-        <RNImage
-          source={require("@/assets/images/icon.png")}
-          style={styles.profileAvatar}
-        />
+      <ScrollView>
+        <View style={styles.profileSection}>
+          <RNImage
+            source={require("@/assets/images/icon.png")}
+            style={styles.profileAvatar}
+          />
 
-        <View style={styles.profileInfo}>
-          <ThemedText type="defaultSemiBold" style={styles.profileName}>
-            John Doe
-          </ThemedText>
-          <ThemedText style={styles.profileHandle}>@johndoe</ThemedText>
-          <ThemedText style={styles.profileBio}>
-            Mobile developer | React Native enthusiast
-          </ThemedText>
+          <View style={styles.profileInfo}>
+            <ThemedText type="defaultSemiBold" style={styles.profileName}>
+              {user.name}
+            </ThemedText>
+            <ThemedText style={styles.profileHandle}>
+              @{user.email.split("@")[0]}
+            </ThemedText>
+            <ThemedText style={styles.profileBio}>
+              Member since {new Date(user.createdAt).toLocaleDateString()}
+            </ThemedText>
+          </View>
+
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>{postCount}</ThemedText>
+              <ThemedText style={styles.statLabel}>Posts</ThemedText>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>0</ThemedText>
+              <ThemedText style={styles.statLabel}>Followers</ThemedText>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>0</ThemedText>
+              <ThemedText style={styles.statLabel}>Following</ThemedText>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <ThemedText style={styles.statNumber}>234</ThemedText>
-            <ThemedText style={styles.statLabel}>Posts</ThemedText>
-          </View>
-          <View style={styles.statItem}>
-            <ThemedText style={styles.statNumber}>1.2K</ThemedText>
-            <ThemedText style={styles.statLabel}>Followers</ThemedText>
-          </View>
-          <View style={styles.statItem}>
-            <ThemedText style={styles.statNumber}>567</ThemedText>
-            <ThemedText style={styles.statLabel}>Following</ThemedText>
-          </View>
+        <View style={styles.menuSection}>
+          <TouchableOpacity style={styles.menuItem}>
+            <ThemedText style={styles.menuItemText}>Settings</ThemedText>
+            <ThemedText style={styles.menuItemArrow}>›</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem}>
+            <ThemedText style={styles.menuItemText}>
+              Privacy & Safety
+            </ThemedText>
+            <ThemedText style={styles.menuItemArrow}>›</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuItem}>
+            <ThemedText style={styles.menuItemText}>Help & Support</ThemedText>
+            <ThemedText style={styles.menuItemArrow}>›</ThemedText>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.menuSection}>
-        <TouchableOpacity style={styles.menuItem}>
-          <ThemedText style={styles.menuItemText}>Settings</ThemedText>
-          <ThemedText style={styles.menuItemArrow}>›</ThemedText>
+        <TouchableOpacity
+          style={[styles.logoutButton, { borderColor: colors.tint }]}
+          onPress={handleLogout}
+        >
+          <ThemedText style={[styles.logoutButtonText, { color: colors.tint }]}>
+            Logout
+          </ThemedText>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <ThemedText style={styles.menuItemText}>Privacy & Safety</ThemedText>
-          <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <ThemedText style={styles.menuItemText}>Help & Support</ThemedText>
-          <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        style={[styles.logoutButton, { borderColor: colors.tint }]}
-        onPress={handleLogout}
-      >
-        <ThemedText style={[styles.logoutButtonText, { color: colors.tint }]}>
-          Logout
-        </ThemedText>
-      </TouchableOpacity>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -120,6 +210,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   profileSection: {
     paddingHorizontal: 16,
