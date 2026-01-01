@@ -1,93 +1,63 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Image as RNImage,
+  RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 
-interface Post {
-  id: string;
-  author: string;
-  avatar: string;
-  username: string;
-  content: string;
-  image?: string;
-  timestamp: string;
-  likes: number;
-  comments: number;
-  reposts: number;
+interface User {
+  id: number;
+  name: string;
+  email: string;
 }
 
-// Dummy data for posts
-const DUMMY_POSTS: Post[] = [
-  {
-    id: "1",
-    author: "John Doe",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    username: "@johndoe",
-    content:
-      "Just launched my new project! Excited to share it with everyone. Check it out and let me know what you think! 🚀",
-    timestamp: "2 hours ago",
-    likes: 234,
-    comments: 45,
-    reposts: 89,
-  },
-  {
-    id: "2",
-    author: "Jane Smith",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    username: "@janesmith",
-    content:
-      "React Native is amazing! Built a cross-platform app in just one week. The development experience is smooth. 💯",
-    timestamp: "4 hours ago",
-    likes: 512,
-    comments: 78,
-    reposts: 156,
-  },
-  {
-    id: "3",
-    author: "Tech News",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    username: "@technewstoday",
-    content:
-      "Latest JavaScript frameworks comparison: React vs Vue vs Angular. Which one is your favorite?",
-    image: "https://via.placeholder.com/400x200?text=Frameworks+Comparison",
-    timestamp: "6 hours ago",
-    likes: 890,
-    comments: 234,
-    reposts: 445,
-  },
-  {
-    id: "4",
-    author: "Dev Tips",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    username: "@devtips",
-    content:
-      "Pro tip: Use useCallback and useMemo to optimize your React components and prevent unnecessary re-renders.",
-    timestamp: "8 hours ago",
-    likes: 456,
-    comments: 102,
-    reposts: 203,
-  },
-  {
-    id: "5",
-    author: "Mobile Dev",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    username: "@mobiledev",
-    content:
-      "Started learning React Native yesterday. Already fell in love with how easy it is to build mobile apps!",
-    timestamp: "10 hours ago",
-    likes: 345,
-    comments: 67,
-    reposts: 123,
-  },
-];
+interface Post {
+  id: number;
+  content: string;
+  userId: number;
+  createdAt: string;
+  user: User | null;
+  likes?: number;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Post {
+  id: number;
+  content: string;
+  userId: number;
+  createdAt: string;
+  user: User | null;
+  likes?: number;
+}
+
+function formatTimestamp(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMinutes = Math.floor(diffInMs / 60000);
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInMinutes < 1) return "just now";
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+}
 
 function PostCard({ post }: { post: Post }) {
   const colorScheme = useColorScheme();
@@ -102,27 +72,25 @@ function PostCard({ post }: { post: Post }) {
         />
         <View style={styles.headerInfo}>
           <View style={styles.authorRow}>
-            <ThemedText style={styles.authorName}>{post.author}</ThemedText>
-            <ThemedText style={styles.username}>{post.username}</ThemedText>
+            <ThemedText style={styles.authorName}>
+              {post.user?.name || "Unknown User"}
+            </ThemedText>
+            <ThemedText style={styles.username}>
+              @{post.user?.email?.split("@")[0] || "user"}
+            </ThemedText>
           </View>
-          <ThemedText style={styles.timestamp}>{post.timestamp}</ThemedText>
+          <ThemedText style={styles.timestamp}>
+            {formatTimestamp(post.createdAt)}
+          </ThemedText>
         </View>
       </View>
 
       <ThemedText style={styles.content}>{post.content}</ThemedText>
 
-      {post.image && (
-        <RNImage
-          source={{ uri: post.image }}
-          style={styles.postImage}
-          defaultSource={require("@/assets/images/react-logo.png")}
-        />
-      )}
-
       <View style={styles.likeContainer}>
         <TouchableOpacity style={styles.likeButton}>
           <ThemedText style={styles.likeIcon}>❤️</ThemedText>
-          <ThemedText style={styles.likeCount}>{post.likes}</ThemedText>
+          <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
         </TouchableOpacity>
       </View>
     </ThemedView>
@@ -131,6 +99,51 @@ function PostCard({ post }: { post: Post }) {
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.GET_POSTS);
+      const data = await response.json();
+
+      if (response.ok) {
+        setPosts(data);
+      } else {
+        console.error("Failed to fetch posts:", data);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchPosts();
+  };
+
+  if (isLoading) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Home
+          </ThemedText>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" />
+        </View>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -141,11 +154,19 @@ export default function HomeScreen() {
       </View>
 
       <FlatList
-        data={DUMMY_POSTS}
+        data={posts}
         renderItem={({ item }) => <PostCard post={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <ThemedText style={styles.emptyText}>No posts yet</ThemedText>
+          </View>
+        }
       />
     </ThemedView>
   );
@@ -212,12 +233,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: 0.2,
   },
-  postImage: {
-    width: "100%",
-    height: 220,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
   likeContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -233,5 +248,18 @@ const styles = StyleSheet.create({
   likeCount: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    paddingVertical: 40,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    opacity: 0.5,
   },
 });
