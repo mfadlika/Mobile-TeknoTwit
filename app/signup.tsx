@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useRouter } from "expo-router";
@@ -43,28 +44,34 @@ export default function SignupScreen() {
 
     setIsLoading(true);
     try {
-      // TODO: Implement actual signup API call
-      // Example:
-      // const response = await fetch('YOUR_API_URL/signup', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ username, email, password }),
-      // });
-      // const data = await response.json();
+      const response = await fetch(API_ENDPOINTS.SIGNUP, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: username, email, password }),
+      });
 
-      // For now, simulate a signup
-      setTimeout(() => {
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Signup failed");
         setIsLoading(false);
-        Alert.alert("Success", "Account created successfully!", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(tabs)"),
-          },
-        ]);
-      }, 1000);
+        return;
+      }
+
+      Alert.alert("Success", "Account created successfully!", [
+        {
+          text: "OK",
+          onPress: () => router.replace("/(tabs)"),
+        },
+      ]);
     } catch (error) {
       setIsLoading(false);
-      Alert.alert("Error", "Signup failed. Please try again.");
+      Alert.alert(
+        "Error",
+        "Cannot connect to server. Please check your connection."
+      );
     }
   };
 
