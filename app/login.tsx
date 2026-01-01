@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/themed-view";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -47,16 +48,12 @@ export default function LoginScreen() {
         return;
       }
 
-      // Store token and user info (you can use AsyncStorage later)
-      // await AsyncStorage.setItem('token', data.token);
-      // await AsyncStorage.setItem('userId', data.userId.toString());
+      // Store token and user info
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem("userId", data.userId.toString());
 
-      Alert.alert("Success", "Login successful!", [
-        {
-          text: "OK",
-          onPress: () => router.replace("/(tabs)"),
-        },
-      ]);
+      setIsLoading(false);
+      router.replace("/(tabs)");
     } catch (error) {
       setIsLoading(false);
       Alert.alert(
