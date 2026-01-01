@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useRouter } from "expo-router";
@@ -15,7 +16,7 @@ import {
 } from "react-native";
 
 export default function LoginScreen() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -23,30 +24,45 @@ export default function LoginScreen() {
   const colors = Colors[colorScheme ?? "light"];
 
   const handleLogin = async () => {
-    if (!username || !password) {
+    if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     setIsLoading(true);
     try {
-      // TODO: Implement actual login API call
-      // Example:
-      // const response = await fetch('YOUR_API_URL/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ username, password }),
-      // });
-      // const data = await response.json();
+      const response = await fetch(API_ENDPOINTS.LOGIN, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // For now, simulate a login
-      setTimeout(() => {
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Login failed");
         setIsLoading(false);
-        router.replace("/(tabs)");
-      }, 1000);
+        return;
+      }
+
+      // Store token and user info (you can use AsyncStorage later)
+      // await AsyncStorage.setItem('token', data.token);
+      // await AsyncStorage.setItem('userId', data.userId.toString());
+
+      Alert.alert("Success", "Login successful!", [
+        {
+          text: "OK",
+          onPress: () => router.replace("/(tabs)"),
+        },
+      ]);
     } catch (error) {
       setIsLoading(false);
-      Alert.alert("Error", "Login failed. Please try again.");
+      Alert.alert(
+        "Error",
+        "Cannot connect to server. Please check your connection."
+      );
     }
   };
 
@@ -65,7 +81,7 @@ export default function LoginScreen() {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <ThemedText style={styles.label}>Username</ThemedText>
+            <ThemedText style={styles.label}>Email</ThemedText>
             <TextInput
               style={[
                 styles.input,
@@ -76,12 +92,13 @@ export default function LoginScreen() {
                   borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
                 },
               ]}
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
-              value={username}
-              onChangeText={setUsername}
+              value={email}
+              onChangeText={setEmail}
               autoCapitalize="none"
               autoCorrect={false}
+              keyboardType="email-address"
             />
           </View>
 
