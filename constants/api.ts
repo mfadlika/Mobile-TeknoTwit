@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
     `${BASE_URL}/api/user/username/${username}`,
 
   GET_POSTS: `${BASE_URL}/api/post`,
+  CREATE_POST: `${BASE_URL}/api/post`,
 };
 
 export const API_CONFIG = {
