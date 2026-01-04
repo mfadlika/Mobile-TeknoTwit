@@ -166,10 +166,10 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
+          {/* <TouchableOpacity style={styles.menuItem}>
             <ThemedText style={styles.menuItemText}>Settings</ThemedText>
             <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* <TouchableOpacity style={styles.menuItem}>
             <ThemedText style={styles.menuItemText}>
