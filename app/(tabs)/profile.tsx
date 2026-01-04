@@ -178,10 +178,10 @@ export default function ProfileScreen() {
             <ThemedText style={styles.menuItemArrow}>›</ThemedText>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          {/* <TouchableOpacity style={styles.menuItem}>
             <ThemedText style={styles.menuItemText}>Help & Support</ThemedText>
             <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <TouchableOpacity
