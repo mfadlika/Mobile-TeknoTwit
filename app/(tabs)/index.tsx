@@ -245,6 +245,7 @@ export default function HomeScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
+              title="Memuat ulang..."
             />
           }
           ListHeaderComponent={

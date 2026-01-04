@@ -113,6 +113,7 @@ export default function PostDetailScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
+              title="Memuat ulang..."
             />
           }
         >
@@ -134,7 +135,11 @@ export default function PostDetailScreen() {
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            title="Memuat ulang..."
+          />
         }
       >
         <View style={styles.headerRow}>
