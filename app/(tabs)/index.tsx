@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: 15,
   },
   composerContentInput: {
     minHeight: 100,
