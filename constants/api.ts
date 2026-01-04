@@ -16,7 +16,7 @@ export const API_ENDPOINTS = {
 };
 
 export const API_CONFIG = {
-  TIMEOUT: 10000, 
+  TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 };
 
