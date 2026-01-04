@@ -144,9 +144,9 @@ export default function ProfileScreen() {
             <ThemedText style={styles.profileHandle}>
               @{user.email.split("@")[0]}
             </ThemedText>
-            <ThemedText style={styles.profileBio}>
+            {/* <ThemedText style={styles.profileBio}>
               Member since {new Date(user.createdAt).toLocaleDateString()}
-            </ThemedText>
+            </ThemedText> */}
           </View>
 
           <View style={styles.statsRow}>
