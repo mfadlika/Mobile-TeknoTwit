@@ -204,6 +204,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
