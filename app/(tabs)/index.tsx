@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   postButtonText: {
-    color: "#fff",
+    color: "#030000ff",
     fontSize: 16,
     fontWeight: "700",
   },
