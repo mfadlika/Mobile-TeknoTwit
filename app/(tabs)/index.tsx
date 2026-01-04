@@ -4,6 +4,7 @@ import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -50,44 +51,53 @@ function formatTimestamp(dateString: string): string {
   return date.toLocaleDateString();
 }
 
-function PostCard({ post }: { post: Post }) {
+function PostCard({ post, onPress }: { post: Post; onPress?: () => void }) {
   return (
-    <ThemedView style={styles.postCard}>
-      <View style={styles.postHeader}>
-        <RNImage
-          source={require("@/assets/images/icon.png")}
-          style={styles.avatar}
-        />
-        <View style={styles.headerInfo}>
-          <View style={styles.authorRow}>
-            <ThemedText style={styles.authorName}>
-              {post.user?.name || "Unknown User"}
-            </ThemedText>
-            <ThemedText style={styles.username}>
-              @{post.user?.email?.split("@")[0] || "user"}
+    
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      disabled={!onPress}
+      style={styles.postCardTouchable}
+    >
+      <ThemedView style={styles.postCard}>
+        <View style={styles.postHeader}>
+          <RNImage
+            source={require("@/assets/images/icon.png")}
+            style={styles.avatar}
+          />
+          <View style={styles.headerInfo}>
+            <View style={styles.authorRow}>
+              <ThemedText style={styles.authorName}>
+                {post.user?.name || "Unknown User"}
+              </ThemedText>
+              <ThemedText style={styles.username}>
+                @{post.user?.email?.split("@")[0] || "user"}
+              </ThemedText>
+            </View>
+            <ThemedText style={styles.timestamp}>
+              {formatTimestamp(post.createdAt)}
             </ThemedText>
           </View>
-          <ThemedText style={styles.timestamp}>
-            {formatTimestamp(post.createdAt)}
-          </ThemedText>
         </View>
-      </View>
 
-      <ThemedText style={styles.content}>{post.content}</ThemedText>
+        <ThemedText style={styles.content}>{post.content}</ThemedText>
 
-      <View style={styles.likeContainer}>
-        <TouchableOpacity style={styles.likeButton}>
-          <ThemedText style={styles.likeIcon}>❤️</ThemedText>
-          <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+        <View style={styles.likeContainer}>
+          <TouchableOpacity style={styles.likeButton}>
+            <ThemedText style={styles.likeIcon}>❤️</ThemedText>
+            <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </ThemedView>
+    </TouchableOpacity>
   );
 }
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -129,6 +139,7 @@ export default function HomeScreen() {
       }
     };
 
+  
     loadAuth();
     fetchPosts();
   }, []);
@@ -221,7 +232,12 @@ export default function HomeScreen() {
 
         <FlatList
           data={posts}
-          renderItem={({ item }) => <PostCard post={item} />}
+          renderItem={({ item }) => (
+            <PostCard
+              post={item}
+              onPress={() => router.push(`/post/${item.id}`)}
+            />
+          )}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
           scrollEventThrottle={16}
@@ -316,7 +332,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: 14,
   },
   composerContentInput: {
     minHeight: 100,
@@ -338,6 +354,10 @@ const styles = StyleSheet.create({
   postCard: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  postCardTouchable: {
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
