@@ -83,7 +83,13 @@ export default function PostDetailScreen() {
   if (isLoading) {
     return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ title: "Post" }} />
+        <Stack.Screen
+          options={{
+            title: "Post",
+            // headerBackTitleVisible: false,
+            headerBackTitle: "Back",
+          }}
+        />
         <View style={styles.centered}>
           <ActivityIndicator size="large" />
         </View>
@@ -94,11 +100,20 @@ export default function PostDetailScreen() {
   if (!post) {
     return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ title: "Post" }} />
+        <Stack.Screen
+          options={{
+            title: "Post",
+            // headerBackTitleVisible: false,
+            headerBackTitle: "Back",
+          }}
+        />
         <ScrollView
           contentContainerStyle={styles.centered}
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
           }
         >
           <ThemedText style={styles.emptyText}>Post tidak ditemukan</ThemedText>
@@ -109,7 +124,13 @@ export default function PostDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: "Post" }} />
+      <Stack.Screen
+        options={{
+          title: "Post",
+          headerBackTitleVisible: false,
+          headerBackTitle: "Back",
+        }}
+      />
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         refreshControl={
