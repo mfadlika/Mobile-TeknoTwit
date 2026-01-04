@@ -128,7 +128,7 @@ export default function PostDetailScreen() {
       <Stack.Screen
         options={{
           title: "Post",
-          headerBackTitleVisible: false,
+        //   headerBackTitleVisible: false,
           headerBackTitle: "Back",
         }}
       />
