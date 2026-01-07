@@ -133,7 +133,9 @@ export default function SignupScreen() {
                   ]}
                   pointerEvents="none"
                 >
-                  <ThemedText style={styles.domainText}>{EMAIL_DOMAIN}</ThemedText>
+                  <ThemedText style={styles.domainText}>
+                    {EMAIL_DOMAIN}
+                  </ThemedText>
                 </View>
               </View>
             </View>

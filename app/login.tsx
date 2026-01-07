@@ -91,14 +91,11 @@ export default function LoginScreen() {
                     backgroundColor:
                       colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
                     color: colorScheme === "dark" ? "#fff" : "#000",
-                    borderColor:
-                      colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                    borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
                   },
                 ]}
                 placeholder="Enter your username"
-                placeholderTextColor={
-                  colorScheme === "dark" ? "#888" : "#999"
-                }
+                placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -111,13 +108,14 @@ export default function LoginScreen() {
                   {
                     backgroundColor:
                       colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                    borderColor:
-                      colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                    borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
                   },
                 ]}
                 pointerEvents="none"
               >
-                <ThemedText style={styles.domainText}>{EMAIL_DOMAIN}</ThemedText>
+                <ThemedText style={styles.domainText}>
+                  {EMAIL_DOMAIN}
+                </ThemedText>
               </View>
             </View>
           </View>
