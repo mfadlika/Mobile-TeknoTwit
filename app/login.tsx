@@ -215,6 +215,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
   },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputFlex: {
+    flex: 1,
+  },
+  domainBox: {
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    marginLeft: 8,
+  },
+  domainText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
   button: {
     height: 50,
     borderRadius: 12,
