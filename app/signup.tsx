@@ -18,16 +18,16 @@ import {
 
 export default function SignupScreen() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const EMAIL_DOMAIN = "@teknokrat.ac.id";
 
   const handleSignup = async () => {
-    if (!username || !email || !password || !confirmPassword) {
+    if (!username || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -44,12 +44,14 @@ export default function SignupScreen() {
 
     setIsLoading(true);
     try {
+      const localPart = username.trim().split("@")[0];
+      const signupEmail = `${localPart}${EMAIL_DOMAIN}`;
       const response = await fetch(API_ENDPOINTS.SIGNUP, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: username, email, password }),
+        body: JSON.stringify({ name: username, email: signupEmail, password }),
       });
 
       const data = await response.json();
@@ -97,45 +99,43 @@ export default function SignupScreen() {
           <View style={styles.form}>
             <View style={styles.inputContainer}>
               <ThemedText style={styles.label}>Username</ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor:
-                      colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                    color: colorScheme === "dark" ? "#fff" : "#000",
-                    borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
-                  },
-                ]}
-                placeholder="Choose a username"
-                placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <ThemedText style={styles.label}>Email</ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor:
-                      colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                    color: colorScheme === "dark" ? "#fff" : "#000",
-                    borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
-                  },
-                ]}
-                placeholder="Enter your email"
-                placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-              />
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.inputFlex,
+                    {
+                      backgroundColor:
+                        colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                      color: colorScheme === "dark" ? "#fff" : "#000",
+                      borderColor:
+                        colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                    },
+                  ]}
+                  placeholder="Choose a username"
+                  placeholderTextColor={
+                    colorScheme === "dark" ? "#888" : "#999"
+                  }
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <View
+                  style={[
+                    styles.domainBox,
+                    {
+                      backgroundColor:
+                        colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                      borderColor:
+                        colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                    },
+                  ]}
+                  pointerEvents="none"
+                >
+                  <ThemedText style={styles.domainText}>{EMAIL_DOMAIN}</ThemedText>
+                </View>
+              </View>
             </View>
 
             <View style={styles.inputContainer}>
@@ -248,6 +248,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputFlex: {
+    flex: 1,
+  },
+  domainBox: {
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    marginLeft: 8,
+  },
+  domainText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   button: {
     height: 50,
