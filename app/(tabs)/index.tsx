@@ -149,7 +149,7 @@ export default function HomeScreen() {
 
   const handleCreatePost = async () => {
     if (!content.trim()) {
-      Alert.alert("Error", "Konten harus diisi.");
+      Alert.alert("Error", "Content must be filled in.");
       return;
     }
 
@@ -159,7 +159,7 @@ export default function HomeScreen() {
     const storedUserId = authUserId || (await AsyncStorage.getItem("userId"));
 
     if (!storedToken || !storedUserId) {
-      Alert.alert("Error", "Silakan login untuk membuat post.");
+      Alert.alert("Error", "Please login to create a post.");
       return;
     }
 
@@ -181,7 +181,7 @@ export default function HomeScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert("Error", data.message || "Gagal mengirim post.");
+        Alert.alert("Error", data.message || "Failed to send post.");
         return;
       }
 
@@ -194,7 +194,7 @@ export default function HomeScreen() {
       setContent("");
     } catch (error) {
       console.error("Error creating post:", error);
-      Alert.alert("Error", "Tidak bisa mengirim post sekarang.");
+      Alert.alert("Error", "Cannot send post right now.");
     } finally {
       setIsSubmitting(false);
     }
@@ -243,12 +243,12 @@ export default function HomeScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              title="Memuat ulang..."
+              title="Refreshing..."
             />
           }
           ListHeaderComponent={
             <View style={styles.listHeader}>
-              <ThemedText style={styles.composerLabel}>Buat Post</ThemedText>
+              <ThemedText style={styles.composerLabel}>Create Post</ThemedText>
 
               <TextInput
                 style={[
@@ -261,7 +261,7 @@ export default function HomeScreen() {
                     color: colorScheme === "dark" ? "#fff" : "#000",
                   },
                 ]}
-                placeholder="Apa yang ingin kamu bagikan?"
+                placeholder="What do you want to share?"
                 placeholderTextColor={
                   colorScheme === "dark" ? "#8a8a8a" : "#999"
                 }
@@ -281,7 +281,7 @@ export default function HomeScreen() {
                 disabled={isSubmitting}
               >
                 <ThemedText style={styles.postButtonText}>
-                  {isSubmitting ? "Mengirim..." : "Kirim"}
+                  {isSubmitting ? "Sending..." : "Send"}
                 </ThemedText>
               </TouchableOpacity>
             </View>
