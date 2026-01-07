@@ -1,6 +1,10 @@
 // API Configuration
+import Constants from "expo-constants";
 
-const BASE_URL = "http://192.168.1.6:3000";
+const BASE_URL =
+  Constants.expoConfig?.extra?.apiBaseUrl ||
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
+  "http://localhost:3000";
 
 export const API_ENDPOINTS = {
   LOGIN: `${BASE_URL}/api/user/login`,
