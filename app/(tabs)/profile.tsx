@@ -158,10 +158,10 @@ export default function ProfileScreen() {
               <ThemedText style={styles.statNumber}>0</ThemedText>
               <ThemedText style={styles.statLabel}>Followers</ThemedText>
             </View> */}
-            <View style={styles.statItem}>
+            {/* <View style={styles.statItem}>
               <ThemedText style={styles.statNumber}>0</ThemedText>
               <ThemedText style={styles.statLabel}>Following</ThemedText>
-            </View>
+            </View> */}
           </View>
         </View>
 
