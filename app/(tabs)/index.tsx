@@ -53,7 +53,6 @@ function formatTimestamp(dateString: string): string {
 
 function PostCard({ post, onPress }: { post: Post; onPress?: () => void }) {
   return (
-    
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
@@ -139,7 +138,6 @@ export default function HomeScreen() {
       }
     };
 
-  
     loadAuth();
     fetchPosts();
   }, []);

@@ -23,6 +23,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const EMAIL_DOMAIN = "@teknokrat.ac.id";
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,12 +33,14 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
+      const localPart = email.trim().split("@")[0];
+      const loginEmail = `${localPart}${EMAIL_DOMAIN}`;
       const response = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: loginEmail, password }),
       });
 
       const data = await response.json();
@@ -78,25 +81,45 @@ export default function LoginScreen() {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <ThemedText style={styles.label}>Email</ThemedText>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor:
-                    colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                  color: colorScheme === "dark" ? "#fff" : "#000",
-                  borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
-                },
-              ]}
-              placeholder="Enter your email"
-              placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-            />
+            <ThemedText style={styles.label}>Username</ThemedText>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.inputFlex,
+                  {
+                    backgroundColor:
+                      colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                    color: colorScheme === "dark" ? "#fff" : "#000",
+                    borderColor:
+                      colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                  },
+                ]}
+                placeholder="Enter your username"
+                placeholderTextColor={
+                  colorScheme === "dark" ? "#888" : "#999"
+                }
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="default"
+              />
+              <View
+                style={[
+                  styles.domainBox,
+                  {
+                    backgroundColor:
+                      colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                    borderColor:
+                      colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                  },
+                ]}
+                pointerEvents="none"
+              >
+                <ThemedText style={styles.domainText}>{EMAIL_DOMAIN}</ThemedText>
+              </View>
+            </View>
           </View>
 
           <View style={styles.inputContainer}>
