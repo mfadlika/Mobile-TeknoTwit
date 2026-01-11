@@ -55,10 +55,12 @@ function PostCard({
   post,
   onPress,
   onToggleLike,
+  onUserPress,
 }: {
   post: Post;
   onPress?: () => void;
   onToggleLike?: (postId: number) => void;
+  onUserPress?: (userId: number) => void;
 }) {
   return (
     <TouchableOpacity
@@ -74,14 +76,24 @@ function PostCard({
             style={styles.avatar}
           />
           <View style={styles.headerInfo}>
-            <View style={styles.authorRow}>
-              <ThemedText style={styles.authorName}>
-                {post.user?.name || "Unknown User"}
-              </ThemedText>
-              <ThemedText style={styles.username}>
-                @{post.user?.email?.split("@")[0] || "user"}
-              </ThemedText>
-            </View>
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                if (post.user?.id) {
+                  onUserPress?.(post.user.id);
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.authorRow}>
+                <ThemedText style={styles.authorName}>
+                  {post.user?.name || "Unknown User"}
+                </ThemedText>
+                <ThemedText style={styles.username}>
+                  @{post.user?.email?.split("@")[0] || "user"}
+                </ThemedText>
+              </View>
+            </TouchableOpacity>
             <ThemedText style={styles.timestamp}>
               {formatTimestamp(post.createdAt)}
             </ThemedText>
@@ -329,6 +341,7 @@ export default function HomeScreen() {
               post={item}
               onPress={() => router.push(`/post/${item.id}`)}
               onToggleLike={handleToggleLike}
+              onUserPress={(userId) => router.push(`/user/${userId}`)}
             />
           )}
           keyExtractor={(item) => item.id.toString()}
