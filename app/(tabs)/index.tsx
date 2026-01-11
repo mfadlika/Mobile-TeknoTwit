@@ -5,7 +5,7 @@ import { Colors } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -130,10 +130,25 @@ export default function HomeScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"all" | "following">("all");
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.GET_POSTS);
+      let url = API_ENDPOINTS.GET_POSTS;
+      const headers: Record<string, string> = {};
+
+      if (activeTab === "following") {
+        const token = authToken || (await AsyncStorage.getItem("token"));
+        if (!token) {
+          Alert.alert("Error", "Please login to see posts from following");
+          setActiveTab("all");
+          return;
+        }
+        url = API_ENDPOINTS.GET_FOLLOWING_POSTS;
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(url, { headers });
       const data = await response.json();
 
       if (response.ok) {
@@ -147,7 +162,7 @@ export default function HomeScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [activeTab, authToken]);
 
   useEffect(() => {
     const loadAuth = async () => {
@@ -165,8 +180,11 @@ export default function HomeScreen() {
     };
 
     loadAuth();
-    fetchPosts();
   }, []);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [activeTab, fetchPosts]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -355,41 +373,112 @@ export default function HomeScreen() {
             />
           }
           ListHeaderComponent={
-            <View style={styles.listHeader}>
-              <ThemedText style={styles.composerLabel}>Create Post</ThemedText>
+            <>
+              {authToken && (
+                <View
+                  style={[
+                    styles.tabContainer,
+                    {
+                      borderBottomColor:
+                        theme === "dark" ? "#2f2f2f" : "#e0e0e0",
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      activeTab === "all" && styles.tabActive,
+                    ]}
+                    onPress={() => setActiveTab("all")}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.tabText,
+                        activeTab === "all" && {
+                          color: colors.tint,
+                          fontWeight: "700",
+                        },
+                      ]}
+                    >
+                      All Posts
+                    </ThemedText>
+                    {activeTab === "all" && (
+                      <View
+                        style={[
+                          styles.tabIndicator,
+                          { backgroundColor: colors.tint },
+                        ]}
+                      />
+                    )}
+                  </TouchableOpacity>
 
-              <TextInput
-                style={[
-                  styles.composerInput,
-                  styles.composerContentInput,
-                  {
-                    backgroundColor: theme === "dark" ? "#1c1c1c" : "#f7f7f7",
-                    borderColor: theme === "dark" ? "#2f2f2f" : "#e0e0e0",
-                    color: theme === "dark" ? "#fff" : "#000",
-                  },
-                ]}
-                placeholder="What do you want to share?"
-                placeholderTextColor={theme === "dark" ? "#8a8a8a" : "#999"}
-                value={content}
-                onChangeText={setContent}
-                multiline
-                textAlignVertical="top"
-              />
-
-              <TouchableOpacity
-                style={[
-                  styles.postButton,
-                  { backgroundColor: colors.tint },
-                  isSubmitting && styles.postButtonDisabled,
-                ]}
-                onPress={handleCreatePost}
-                disabled={isSubmitting}
-              >
-                <ThemedText style={styles.postButtonText}>
-                  {isSubmitting ? "Sending..." : "Send"}
+                  <TouchableOpacity
+                    style={[
+                      styles.tab,
+                      activeTab === "following" && styles.tabActive,
+                    ]}
+                    onPress={() => setActiveTab("following")}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.tabText,
+                        activeTab === "following" && {
+                          color: colors.tint,
+                          fontWeight: "700",
+                        },
+                      ]}
+                    >
+                      Following
+                    </ThemedText>
+                    {activeTab === "following" && (
+                      <View
+                        style={[
+                          styles.tabIndicator,
+                          { backgroundColor: colors.tint },
+                        ]}
+                      />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+              <View style={styles.listHeader}>
+                <ThemedText style={styles.composerLabel}>
+                  Create Post
                 </ThemedText>
-              </TouchableOpacity>
-            </View>
+
+                <TextInput
+                  style={[
+                    styles.composerInput,
+                    styles.composerContentInput,
+                    {
+                      backgroundColor: theme === "dark" ? "#1c1c1c" : "#f7f7f7",
+                      borderColor: theme === "dark" ? "#2f2f2f" : "#e0e0e0",
+                      color: theme === "dark" ? "#fff" : "#000",
+                    },
+                  ]}
+                  placeholder="What do you want to share?"
+                  placeholderTextColor={theme === "dark" ? "#8a8a8a" : "#999"}
+                  value={content}
+                  onChangeText={setContent}
+                  multiline
+                  textAlignVertical="top"
+                />
+
+                <TouchableOpacity
+                  style={[
+                    styles.postButton,
+                    { backgroundColor: colors.tint },
+                    isSubmitting && styles.postButtonDisabled,
+                  ]}
+                  onPress={handleCreatePost}
+                  disabled={isSubmitting}
+                >
+                  <ThemedText style={styles.postButtonText}>
+                    {isSubmitting ? "Sending..." : "Send"}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </>
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -537,5 +626,31 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     opacity: 0.5,
+  },
+  tabContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    gap: 4,
+  },
+  tab: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    position: "relative",
+  },
+  tabActive: {
+    // Active tab styling handled by text and indicator
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: "600",
+    opacity: 0.6,
+  },
+  tabIndicator: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
   },
 });
