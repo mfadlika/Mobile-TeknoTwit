@@ -96,7 +96,7 @@ export default function UserProfileScreen() {
     const fetchUserData = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        
+
         const [userResponse, postsResponse] = await Promise.all([
           fetch(API_ENDPOINTS.GET_USER_BY_ID(id as string)),
           fetch(`${API_ENDPOINTS.GET_POSTS}/user/${id}`),
@@ -116,7 +116,7 @@ export default function UserProfileScreen() {
         // Check follow status
         if (token) {
           const followingResponse = await fetch(
-            `${API_ENDPOINTS.GET_FOLLOWING}/${id}`,
+            API_ENDPOINTS.CHECK_FOLLOW_STATUS(id as string),
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -150,8 +150,8 @@ export default function UserProfileScreen() {
       setIsFollowLoading(true);
 
       const endpoint = isFollowing
-        ? `${API_ENDPOINTS.UNFOLLOW}/${id}`
-        : `${API_ENDPOINTS.FOLLOW}/${id}`;
+        ? API_ENDPOINTS.UNFOLLOW(id as string)
+        : API_ENDPOINTS.FOLLOW(id as string);
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -164,7 +164,10 @@ export default function UserProfileScreen() {
         setIsFollowing(!isFollowing);
       } else {
         const errorData = await response.json();
-        Alert.alert("Error", errorData.error || "Failed to update follow status");
+        Alert.alert(
+          "Error",
+          errorData.error || "Failed to update follow status"
+        );
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
