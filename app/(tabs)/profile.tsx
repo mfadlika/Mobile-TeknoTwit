@@ -30,6 +30,8 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [postCount, setPostCount] = useState(0);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(theme === "dark");
 
@@ -65,6 +67,24 @@ export default function ProfileScreen() {
             (post: any) => post.userId === parseInt(userId)
           );
           setPostCount(userPosts.length);
+        }
+
+        // Fetch followers count
+        const followersResponse = await fetch(
+          API_ENDPOINTS.GET_FOLLOWERS(userId)
+        );
+        if (followersResponse.ok) {
+          const followersData = await followersResponse.json();
+          setFollowersCount(followersData.length);
+        }
+
+        // Fetch following count
+        const followingResponse = await fetch(
+          API_ENDPOINTS.GET_FOLLOWING(userId)
+        );
+        if (followingResponse.ok) {
+          const followingData = await followingResponse.json();
+          setFollowingCount(followingData.length);
         }
       }
     } catch (error) {
@@ -186,14 +206,18 @@ export default function ProfileScreen() {
               <ThemedText style={styles.statNumber}>{postCount}</ThemedText>
               <ThemedText style={styles.statLabel}>Posts</ThemedText>
             </View>
-            {/* <View style={styles.statItem}>
-              <ThemedText style={styles.statNumber}>0</ThemedText>
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>
+                {followersCount}
+              </ThemedText>
               <ThemedText style={styles.statLabel}>Followers</ThemedText>
-            </View> */}
-            {/* <View style={styles.statItem}>
-              <ThemedText style={styles.statNumber}>0</ThemedText>
+            </View>
+            <View style={styles.statItem}>
+              <ThemedText style={styles.statNumber}>
+                {followingCount}
+              </ThemedText>
               <ThemedText style={styles.statLabel}>Following</ThemedText>
-            </View> */}
+            </View>
           </View>
         </View>
 
