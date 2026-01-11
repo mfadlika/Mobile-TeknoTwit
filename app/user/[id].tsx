@@ -12,7 +12,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
   id: number;
@@ -87,10 +89,14 @@ export default function UserProfileScreen() {
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        const token = await AsyncStorage.getItem("token");
+        
         const [userResponse, postsResponse] = await Promise.all([
           fetch(API_ENDPOINTS.GET_USER_BY_ID(id as string)),
           fetch(`${API_ENDPOINTS.GET_POSTS}/user/${id}`),
@@ -106,6 +112,23 @@ export default function UserProfileScreen() {
         if (postsResponse.ok) {
           setPosts(postsData);
         }
+
+        // Check follow status
+        if (token) {
+          const followingResponse = await fetch(
+            `${API_ENDPOINTS.GET_FOLLOWING}/${id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (followingResponse.ok) {
+            const followingData = await followingResponse.json();
+            setIsFollowing(followingData.isFollowing || false);
+          }
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -115,6 +138,41 @@ export default function UserProfileScreen() {
 
     fetchUserData();
   }, [id]);
+
+  const handleFollowToggle = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Error", "Please login first");
+        return;
+      }
+
+      setIsFollowLoading(true);
+
+      const endpoint = isFollowing
+        ? `${API_ENDPOINTS.UNFOLLOW}/${id}`
+        : `${API_ENDPOINTS.FOLLOW}/${id}`;
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setIsFollowing(!isFollowing);
+      } else {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.error || "Failed to update follow status");
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -188,6 +246,46 @@ export default function UserProfileScreen() {
             </ThemedText>
           </View>
 
+          <TouchableOpacity
+            style={[
+              styles.followButton,
+              {
+                backgroundColor: isFollowing
+                  ? "transparent"
+                  : theme === "dark"
+                  ? "#667eea"
+                  : "#667eea",
+                borderColor: isFollowing
+                  ? theme === "dark"
+                    ? "#667eea"
+                    : "#667eea"
+                  : "transparent",
+                borderWidth: isFollowing ? 2 : 0,
+              },
+            ]}
+            onPress={handleFollowToggle}
+            disabled={isFollowLoading}
+          >
+            <ThemedText
+              style={[
+                styles.followButtonText,
+                {
+                  color: isFollowing
+                    ? theme === "dark"
+                      ? "#667eea"
+                      : "#667eea"
+                    : "#fff",
+                },
+              ]}
+            >
+              {isFollowLoading
+                ? "Loading..."
+                : isFollowing
+                ? "Following"
+                : "Follow"}
+            </ThemedText>
+          </TouchableOpacity>
+
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <ThemedText style={styles.statNumber}>{posts.length}</ThemedText>
@@ -255,6 +353,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     opacity: 0.6,
     marginBottom: 8,
+  },
+  followButton: {
+    paddingHorizontal: 32,
+    paddingVertical: 10,
+    borderRadius: 25,
+    marginBottom: 20,
+    minWidth: 120,
+    alignItems: "center",
+  },
+  followButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
   },
   statsRow: {
     flexDirection: "row",
