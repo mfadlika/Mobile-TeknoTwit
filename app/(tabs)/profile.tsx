@@ -204,7 +204,6 @@ export default function ProfileScreen() {
             style={[styles.menuItem, { borderBottomColor: colors.icon + "30" }]}
           >
             <View style={styles.menuItemLeft}>
-              <ThemedText style={styles.menuItemIcon}>🌙</ThemedText>
               <View>
                 <ThemedText style={styles.menuItemText}>Dark Mode</ThemedText>
                 <ThemedText style={styles.menuItemSubtext}>
