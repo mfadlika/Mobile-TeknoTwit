@@ -51,7 +51,15 @@ function formatTimestamp(dateString: string): string {
   return date.toLocaleDateString();
 }
 
-function PostCard({ post, onPress }: { post: Post; onPress?: () => void }) {
+function PostCard({
+  post,
+  onPress,
+  onToggleLike,
+}: {
+  post: Post;
+  onPress?: () => void;
+  onToggleLike?: (postId: number) => void;
+}) {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -83,7 +91,13 @@ function PostCard({ post, onPress }: { post: Post; onPress?: () => void }) {
         <ThemedText style={styles.content}>{post.content}</ThemedText>
 
         <View style={styles.likeContainer}>
-          <TouchableOpacity style={styles.likeButton}>
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              onToggleLike?.(post.id);
+            }}
+          >
             <ThemedText style={styles.likeIcon}>❤️</ThemedText>
             <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
           </TouchableOpacity>
@@ -200,6 +214,86 @@ export default function HomeScreen() {
     }
   };
 
+  const handleToggleLike = async (postId: number) => {
+    const storedToken = authToken || (await AsyncStorage.getItem("token"));
+
+    if (!storedToken) {
+      Alert.alert("Error", "Please login to like posts.");
+      return;
+    }
+
+    // Optimistic update
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p
+      )
+    );
+
+    try {
+      const response = await fetch(
+        `${API_ENDPOINTS.CREATE_POST}/${postId}/like`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${storedToken}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 409) {
+        // Already liked, so unlike
+        const unlikeResponse = await fetch(
+          `${API_ENDPOINTS.CREATE_POST}/${postId}/like`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
+        );
+
+        const unlikeData = await unlikeResponse.json();
+
+        if (unlikeResponse.ok) {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId ? { ...p, likes: unlikeData.likes || 0 } : p
+            )
+          );
+        }
+      } else if (response.ok) {
+        // Successfully liked
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId ? { ...p, likes: data.likes || p.likes || 0 } : p
+          )
+        );
+      } else {
+        // Revert optimistic update on error
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) }
+              : p
+          )
+        );
+        Alert.alert("Error", data.message || "Failed to like post.");
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      // Revert optimistic update
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) } : p
+        )
+      );
+      Alert.alert("Error", "Cannot like post right now.");
+    }
+  };
+
   if (isLoading) {
     return (
       <ThemedView style={styles.container}>
@@ -234,6 +328,7 @@ export default function HomeScreen() {
             <PostCard
               post={item}
               onPress={() => router.push(`/post/${item.id}`)}
+              onToggleLike={handleToggleLike}
             />
           )}
           keyExtractor={(item) => item.id.toString()}
