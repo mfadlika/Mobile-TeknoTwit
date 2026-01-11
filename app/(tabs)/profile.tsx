@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTheme } from "@/hooks/use-theme-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import {
   Image as RNImage,
   ScrollView,
   StyleSheet,
+  Switch,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -24,16 +25,18 @@ interface User {
 }
 
 export default function ProfileScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+  const { theme, setThemePreference: setThemePref } = useTheme();
+  const colors = Colors[theme];
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [postCount, setPostCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(theme === "dark");
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
+  const toggleTheme = async (value: boolean) => {
+    const newTheme = value ? "dark" : "light";
+    await setThemePref(newTheme);
+  };
 
   const fetchUserData = async () => {
     try {
@@ -70,6 +73,15 @@ export default function ProfileScreen() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setIsDarkMode(theme === "dark");
+  }, [theme]);
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -166,22 +178,27 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          {/* <TouchableOpacity style={styles.menuItem}>
-            <ThemedText style={styles.menuItemText}>Settings</ThemedText>
-            <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-          </TouchableOpacity> */}
+          <ThemedText style={styles.sectionTitle}>Settings</ThemedText>
 
-          {/* <TouchableOpacity style={styles.menuItem}>
-            <ThemedText style={styles.menuItemText}>
-              Privacy & Safety
-            </ThemedText>
-            <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-          </TouchableOpacity> */}
-
-          {/* <TouchableOpacity style={styles.menuItem}>
-            <ThemedText style={styles.menuItemText}>Help & Support</ThemedText>
-            <ThemedText style={styles.menuItemArrow}>›</ThemedText>
-          </TouchableOpacity> */}
+          <View
+            style={[styles.menuItem, { borderBottomColor: colors.icon + "30" }]}
+          >
+            <View style={styles.menuItemLeft}>
+              <ThemedText style={styles.menuItemIcon}>🌙</ThemedText>
+              <View>
+                <ThemedText style={styles.menuItemText}>Dark Mode</ThemedText>
+                <ThemedText style={styles.menuItemSubtext}>
+                  {isDarkMode ? "Enabled" : "Disabled"}
+                </ThemedText>
+              </View>
+            </View>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleTheme}
+              trackColor={{ false: "#d1d5db", true: colors.tint }}
+              thumbColor={isDarkMode ? "#fff" : "#f9fafb"}
+            />
+          </View>
         </View>
 
         <TouchableOpacity
@@ -269,19 +286,40 @@ const styles = StyleSheet.create({
   },
   menuSection: {
     marginVertical: 16,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    opacity: 0.5,
+    marginBottom: 12,
+    marginLeft: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   menuItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+  },
+  menuItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  menuItemIcon: {
+    fontSize: 22,
   },
   menuItemText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
+  },
+  menuItemSubtext: {
+    fontSize: 12,
+    opacity: 0.5,
+    marginTop: 2,
   },
   menuItemArrow: {
     fontSize: 20,
