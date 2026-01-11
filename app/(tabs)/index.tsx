@@ -255,16 +255,13 @@ export default function HomeScreen() {
                   styles.composerInput,
                   styles.composerContentInput,
                   {
-                    backgroundColor:
-                      theme === "dark" ? "#1c1c1c" : "#f7f7f7",
+                    backgroundColor: theme === "dark" ? "#1c1c1c" : "#f7f7f7",
                     borderColor: theme === "dark" ? "#2f2f2f" : "#e0e0e0",
                     color: theme === "dark" ? "#fff" : "#000",
                   },
                 ]}
                 placeholder="What do you want to share?"
-                placeholderTextColor={
-                  theme === "dark" ? "#8a8a8a" : "#999"
-                }
+                placeholderTextColor={theme === "dark" ? "#8a8a8a" : "#999"}
                 value={content}
                 onChangeText={setContent}
                 multiline

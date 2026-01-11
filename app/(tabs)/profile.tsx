@@ -107,13 +107,18 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <ThemedView style={styles.container}>
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            { borderBottomColor: theme === "dark" ? "#404040" : "#e0e0e0" },
+          ]}
+        >
           <ThemedText type="title" style={styles.title}>
             Profile
           </ThemedText>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={colors.tint} />
         </View>
       </ThemedView>
     );
@@ -122,7 +127,12 @@ export default function ProfileScreen() {
   if (!user) {
     return (
       <ThemedView style={styles.container}>
-        <View style={styles.header}>
+        <View
+          style={[
+            styles.header,
+            { borderBottomColor: theme === "dark" ? "#404040" : "#e0e0e0" },
+          ]}
+        >
           <ThemedText type="title" style={styles.title}>
             Profile
           </ThemedText>
@@ -136,14 +146,24 @@ export default function ProfileScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: theme === "dark" ? "#404040" : "#e0e0e0" },
+        ]}
+      >
         <ThemedText type="title" style={styles.title}>
           Profile
         </ThemedText>
       </View>
 
       <ScrollView>
-        <View style={styles.profileSection}>
+        <View
+          style={[
+            styles.profileSection,
+            { borderBottomColor: theme === "dark" ? "#404040" : "#e0e0e0" },
+          ]}
+        >
           <RNImage
             source={require("@/assets/images/icon.png")}
             style={styles.profileAvatar}
@@ -223,7 +243,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingTop: 50,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
   },
   title: {
     fontSize: 28,
@@ -239,7 +258,6 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
   },
   profileAvatar: {
     width: 80,
