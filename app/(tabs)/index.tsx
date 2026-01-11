@@ -442,9 +442,9 @@ export default function HomeScreen() {
                 </View>
               )}
               <View style={styles.listHeader}>
-                <ThemedText style={styles.composerLabel}>
+                {/* <ThemedText style={styles.composerLabel}>
                   Create Post
-                </ThemedText>
+                </ThemedText> */}
 
                 <TextInput
                   style={[
