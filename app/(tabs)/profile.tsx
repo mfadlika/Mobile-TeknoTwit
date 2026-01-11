@@ -206,12 +206,16 @@ export default function ProfileScreen() {
               <ThemedText style={styles.statNumber}>{postCount}</ThemedText>
               <ThemedText style={styles.statLabel}>Posts</ThemedText>
             </View>
-            <View style={styles.statItem}>
+            <TouchableOpacity
+              style={styles.statItem}
+              onPress={() => router.push("/followers")}
+              activeOpacity={0.7}
+            >
               <ThemedText style={styles.statNumber}>
                 {followersCount}
               </ThemedText>
               <ThemedText style={styles.statLabel}>Followers</ThemedText>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.statItem}
               onPress={() => router.push("/following")}
