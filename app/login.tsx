@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTheme } from "@/hooks/use-theme-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -21,8 +21,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+  const { theme } = useTheme();
+  const colors = Colors[theme];
   const EMAIL_DOMAIN = "@teknokrat.ac.id";
 
   const handleLogin = async () => {
@@ -88,14 +88,13 @@ export default function LoginScreen() {
                   styles.input,
                   styles.inputFlex,
                   {
-                    backgroundColor:
-                      colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                    color: colorScheme === "dark" ? "#fff" : "#000",
-                    borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                    backgroundColor: theme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                    color: theme === "dark" ? "#fff" : "#000",
+                    borderColor: theme === "dark" ? "#404040" : "#e0e0e0",
                   },
                 ]}
                 placeholder="Enter your username"
-                placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
+                placeholderTextColor={theme === "dark" ? "#888" : "#999"}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -106,9 +105,8 @@ export default function LoginScreen() {
                 style={[
                   styles.domainBox,
                   {
-                    backgroundColor:
-                      colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                    borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                    backgroundColor: theme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                    borderColor: theme === "dark" ? "#404040" : "#e0e0e0",
                   },
                 ]}
                 pointerEvents="none"
@@ -126,14 +124,13 @@ export default function LoginScreen() {
               style={[
                 styles.input,
                 {
-                  backgroundColor:
-                    colorScheme === "dark" ? "#2c2c2c" : "#f5f5f5",
-                  color: colorScheme === "dark" ? "#fff" : "#000",
-                  borderColor: colorScheme === "dark" ? "#404040" : "#e0e0e0",
+                  backgroundColor: theme === "dark" ? "#2c2c2c" : "#f5f5f5",
+                  color: theme === "dark" ? "#fff" : "#000",
+                  borderColor: theme === "dark" ? "#404040" : "#e0e0e0",
                 },
               ]}
               placeholder="Enter your password"
-              placeholderTextColor={colorScheme === "dark" ? "#888" : "#999"}
+              placeholderTextColor={theme === "dark" ? "#888" : "#999"}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
