@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTheme } from "@/hooks/use-theme-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -94,8 +94,8 @@ function PostCard({ post, onPress }: { post: Post; onPress?: () => void }) {
 }
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+  const { theme } = useTheme();
+  const colors = Colors[theme];
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -256,14 +256,14 @@ export default function HomeScreen() {
                   styles.composerContentInput,
                   {
                     backgroundColor:
-                      colorScheme === "dark" ? "#1c1c1c" : "#f7f7f7",
-                    borderColor: colorScheme === "dark" ? "#2f2f2f" : "#e0e0e0",
-                    color: colorScheme === "dark" ? "#fff" : "#000",
+                      theme === "dark" ? "#1c1c1c" : "#f7f7f7",
+                    borderColor: theme === "dark" ? "#2f2f2f" : "#e0e0e0",
+                    color: theme === "dark" ? "#fff" : "#000",
                   },
                 ]}
                 placeholder="What do you want to share?"
                 placeholderTextColor={
-                  colorScheme === "dark" ? "#8a8a8a" : "#999"
+                  theme === "dark" ? "#8a8a8a" : "#999"
                 }
                 value={content}
                 onChangeText={setContent}
