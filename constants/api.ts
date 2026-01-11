@@ -18,6 +18,11 @@ export const API_ENDPOINTS = {
   GET_POSTS: `${BASE_URL}/api/post`,
   CREATE_POST: `${BASE_URL}/api/post`,
   GET_POST_BY_ID: (id: string | number) => `${BASE_URL}/api/post/${id}`,
+
+  FOLLOW: `${BASE_URL}/api/follow/follow`,
+  UNFOLLOW: `${BASE_URL}/api/follow/unfollow`,
+  GET_FOLLOWERS: `${BASE_URL}/api/follow/followers`,
+  GET_FOLLOWING: `${BASE_URL}/api/follow/following`,
 };
 
 export const API_CONFIG = {
