@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     `${BASE_URL}/api/user/username/${username}`,
 
   GET_POSTS: `${BASE_URL}/api/post`,
+  GET_FOLLOWING_POSTS: `${BASE_URL}/api/post/following/feed`,
   CREATE_POST: `${BASE_URL}/api/post`,
   GET_POST_BY_ID: (id: string | number) => `${BASE_URL}/api/post/${id}`,
 
