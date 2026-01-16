@@ -1,11 +1,14 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
+import type { Request, Response } from "express";
+
 const prisma = new PrismaClient();
-const jwt = require("jsonwebtoken");
 
 const SECRET = process.env.JWT_SECRET || "dev_secret";
 
 // User login controller (email + password)
-exports.postLogin = async (req, res) => {
+export const postLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -40,7 +43,7 @@ exports.postLogin = async (req, res) => {
   }
 };
 // User signup controller
-exports.postSignUp = async (req, res) => {
+export const postSignUp = async (req: Request, res: Response) => {
   try {
     const { name, username, email, password } = req.body;
 
@@ -105,6 +108,6 @@ exports.postSignUp = async (req, res) => {
   }
 };
 
-exports.postLogout = async (req, res) => {
+export const postLogout = async (req: Request, res: Response) => {
   res.json({ message: "Logout successful" });
 };

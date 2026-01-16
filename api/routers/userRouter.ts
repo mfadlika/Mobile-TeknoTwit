@@ -1,12 +1,10 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   getUsers,
   getUser,
   getUserByUsername,
-} = require("../controller/userController");
-const { postLogin, postSignUp, postLogout } = require("../controller/loginController");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+} from "../controller/userController";
+import { postLogin, postSignUp, postLogout } from "../controller/loginController";
 
 const userRouter = express.Router();
 
@@ -24,4 +22,4 @@ userRouter.post("/login", postLogin);
 
 userRouter.delete("/logout", postLogout);
 
-module.exports = userRouter;
+export default userRouter;

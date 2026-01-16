@@ -1,12 +1,12 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   followUser,
   unfollowUser,
   getFollowers,
   getFollowing,
   checkFollowStatus,
-} = require("../controller/followController");
-const auth = require("../middleware/auth");
+} from "../controller/followController";
+import auth from "../middleware/auth";
 
 const followrouter = express.Router();
 
@@ -16,4 +16,4 @@ followrouter.get("/followers/:userId", getFollowers);
 followrouter.get("/following/:userId", getFollowing);
 followrouter.get("/status/:userId", auth, checkFollowStatus);
 
-module.exports = followrouter;
+export default followrouter;

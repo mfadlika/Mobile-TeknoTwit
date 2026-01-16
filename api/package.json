@@ -5,21 +5,28 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "build": "tsc",
+    "dev": "nodemon --watch \"**/*.ts\" --exec \"node -r ts-node/register\" index.ts",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "jsonwebtoken": "^9.0.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.10.7",
     "nodemon": "^3.1.11",
-    "prisma": "5.22.0"
+    "prisma": "5.22.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   }
 }

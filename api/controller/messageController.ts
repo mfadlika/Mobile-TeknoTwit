@@ -1,16 +1,19 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import type { Request, Response } from "express";
+
 const prisma = new PrismaClient();
 
-function getAuthUserId(req) {
+function getAuthUserId(req: Request): number | null {
   return req.user && req.user.id ? Number(req.user.id) : null;
 }
 
-
-exports.sendMessage = async (req, res) => {
+export const sendMessage = async (req: Request, res: Response) => {
   try {
     const senderId = getAuthUserId(req);
     const receiverId = Number(req.body.receiverId);
-    const content = typeof req.body.content === "string" ? req.body.content : null;
+    const content =
+      typeof req.body.content === "string" ? req.body.content : null;
 
     if (!senderId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -43,7 +46,7 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-exports.getMessages = async (req, res) => {
+export const getMessages = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     const otherUserId = Number(req.query.userId);
@@ -71,9 +74,12 @@ exports.getMessages = async (req, res) => {
   }
 };
 
-exports.sendDirectMessageWithPost = async (req, res) => {
+export const sendDirectMessageWithPost = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const senderId = getAuthUserId(req);    
+    const senderId = getAuthUserId(req);
     const receiverId = Number(req.body.receiverId);
     const content =
       typeof req.body.content === "string" ? req.body.content : null;
@@ -86,9 +92,7 @@ exports.sendDirectMessageWithPost = async (req, res) => {
       return res.status(400).json({ message: "Invalid receiver" });
     }
     if (!content && !postId) {
-      return res
-        .status(400)
-        .json({ message: "Message or postId is required" });
+      return res.status(400).json({ message: "Message or postId is required" });
     }
     if (postId) {
       const post = await prisma.post.findUnique({ where: { id: postId } });
@@ -112,7 +116,7 @@ exports.sendDirectMessageWithPost = async (req, res) => {
   }
 };
 
-exports.deleteMessage = async (req, res) => {
+export const deleteMessage = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     const messageId = Number(req.params.id);
@@ -142,7 +146,7 @@ exports.deleteMessage = async (req, res) => {
   }
 };
 
-exports.editMessage = async (req, res) => {
+export const editMessage = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     const messageId = Number(req.params.id);
@@ -175,8 +179,7 @@ exports.editMessage = async (req, res) => {
     });
 
     res.json({ message: "Message updated", data: updatedMessage });
-    } catch (err) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-

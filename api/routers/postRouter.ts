@@ -1,5 +1,5 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   getPosts,
   getPost,
   getPostsByUser,
@@ -10,10 +10,10 @@ const {
   unrepostPost,
   likePost,
   unlikePost,
-} = require("../controller/postController");
+} from "../controller/postController";
+import auth from "../middleware/auth";
 
 const postRouter = express.Router();
-const auth = require("../middleware/auth");
 
 // Get posts from followed users (requires auth)
 postRouter.get("/following/feed", auth, getFollowingPosts);
@@ -41,4 +41,4 @@ postRouter.delete("/:id/like", auth, unlikePost);
 postRouter.post("/:id/repost", auth, repostPost);
 postRouter.delete("/:id/repost", auth, unrepostPost);
 
-module.exports = postRouter;
+export default postRouter;

@@ -1,11 +1,14 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import type { Request, Response } from "express";
+
 const prisma = new PrismaClient();
 
-function getAuthUserId(req) {
+function getAuthUserId(req: Request): number | null {
   return req.user && req.user.id ? Number(req.user.id) : null;
 }
 
-exports.followUser = async (req, res) => {
+export const followUser = async (req: Request, res: Response) => {
   try {
     const followerId = getAuthUserId(req);
     const followingId = Number(req.params.userId);
@@ -41,7 +44,7 @@ exports.followUser = async (req, res) => {
   }
 };
 
-exports.unfollowUser = async (req, res) => {
+export const unfollowUser = async (req: Request, res: Response) => {
   try {
     const followerId = getAuthUserId(req);
     const followingId = Number(req.params.userId);
@@ -70,7 +73,7 @@ exports.unfollowUser = async (req, res) => {
   }
 };
 
-exports.getFollowers = async (req, res) => {
+export const getFollowers = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.userId);
     if (!userId) {
@@ -89,7 +92,7 @@ exports.getFollowers = async (req, res) => {
   }
 };
 
-exports.getFollowing = async (req, res) => {
+export const getFollowing = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.params.userId);
     if (!userId) {
@@ -108,7 +111,7 @@ exports.getFollowing = async (req, res) => {
   }
 };
 
-exports.checkFollowStatus = async (req, res) => {
+export const checkFollowStatus = async (req: Request, res: Response) => {
   try {
     const followerId = getAuthUserId(req);
     const followingId = Number(req.params.userId);

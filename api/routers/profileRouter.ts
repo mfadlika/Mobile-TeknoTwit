@@ -1,13 +1,13 @@
-const express = require("express");
-const auth = require("../middleware/auth");
-const {
+import express from "express";
+import auth from "../middleware/auth";
+import {
   getProfile,
   updateProfile,
   deleteProfile,
   getMyProfile,
   deleteMyProfile,
   sendDirectMessage,
-} = require("../controller/profileController");
+} from "../controller/profileController";
 
 const profileRouter = express.Router();
 
@@ -18,4 +18,4 @@ profileRouter.get("/:userId", getProfile);
 profileRouter.put("/:userId", auth, updateProfile);
 profileRouter.delete("/:userId", auth, deleteProfile);
 
-module.exports = profileRouter;
+export default profileRouter;

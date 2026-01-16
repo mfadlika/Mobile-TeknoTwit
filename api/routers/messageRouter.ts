@@ -1,11 +1,11 @@
-const express = require("express");
-const auth = require("../middleware/auth");
-const {
+import express from "express";
+import auth from "../middleware/auth";
+import {
   sendMessage,
   getMessages,
   deleteMessage,
   editMessage,
-} = require("../controller/messageController");
+} from "../controller/messageController";
 
 const messageRouter = express.Router();
 
@@ -14,4 +14,4 @@ messageRouter.get("/", auth, getMessages);
 messageRouter.delete("/:id", auth, deleteMessage);
 messageRouter.patch("/:id", auth, editMessage);
 
-module.exports = messageRouter;
+export default messageRouter;

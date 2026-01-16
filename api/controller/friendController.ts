@@ -1,17 +1,16 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient, FriendStatus } from "@prisma/client";
+import type { Request, Response } from "express";
+
 const prisma = new PrismaClient();
 
-const FRIEND_STATUS = {
-  PENDING: "PENDING",
-  ACCEPTED: "ACCEPTED",
-  REJECTED: "REJECTED",
-};
+const FRIEND_STATUS = FriendStatus;
 
-function getAuthUserId(req) {
+function getAuthUserId(req: Request): number | null {
   return req.user && req.user.id ? Number(req.user.id) : null;
 }
 
-exports.sendFriendRequest = async (req, res) => {
+export const sendFriendRequest = async (req: Request, res: Response) => {
   try {
     const requesterId = getAuthUserId(req);
     const addresseeId = Number(req.body.addresseeId);
@@ -39,9 +38,7 @@ exports.sendFriendRequest = async (req, res) => {
       },
     });
     if (existing) {
-      return res
-        .status(409)
-        .json({ message: "Friend request already exists" });
+      return res.status(409).json({ message: "Friend request already exists" });
     }
 
     const request = await prisma.friendship.create({
@@ -54,7 +51,7 @@ exports.sendFriendRequest = async (req, res) => {
   }
 };
 
-exports.getPendingRequests = async (req, res) => {
+export const getPendingRequests = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     if (!userId) {
@@ -73,11 +70,11 @@ exports.getPendingRequests = async (req, res) => {
   }
 };
 
-exports.respondToRequest = async (req, res) => {
+export const respondToRequest = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     const requestId = Number(req.params.id);
-    const status = String(req.body.status || "").toUpperCase();
+    const statusInput = String(req.body.status || "").toUpperCase();
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -85,9 +82,13 @@ exports.respondToRequest = async (req, res) => {
     if (!requestId) {
       return res.status(400).json({ message: "Invalid request id" });
     }
-    if (![FRIEND_STATUS.ACCEPTED, FRIEND_STATUS.REJECTED].includes(status)) {
+    if (
+      statusInput !== FRIEND_STATUS.ACCEPTED &&
+      statusInput !== FRIEND_STATUS.REJECTED
+    ) {
       return res.status(400).json({ message: "Invalid status" });
     }
+    const status = statusInput as FriendStatus;
 
     const request = await prisma.friendship.findUnique({
       where: { id: requestId },
@@ -110,7 +111,7 @@ exports.respondToRequest = async (req, res) => {
   }
 };
 
-exports.getFriends = async (req, res) => {
+export const getFriends = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     if (!userId) {
@@ -136,7 +137,7 @@ exports.getFriends = async (req, res) => {
   }
 };
 
-exports.removeFriend = async (req, res) => {
+export const removeFriend = async (req: Request, res: Response) => {
   try {
     const userId = getAuthUserId(req);
     const friendshipId = Number(req.params.id);

@@ -1,8 +1,15 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
+import type { Request, Response } from "express";
+
 const prisma = new PrismaClient();
 
+function getAuthUserId(req: Request): number | null {
+  return req.user && req.user.id ? Number(req.user.id) : null;
+}
+
 // GET profile by userId
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId);
 
@@ -14,7 +21,7 @@ exports.getProfile = async (req, res) => {
         bio: true,
         avatarUrl: true,
         createdAt: true,
-      },
+      } as any,
     });
 
     if (!user) {
@@ -28,30 +35,29 @@ exports.getProfile = async (req, res) => {
 };
 
 // PUT update profile (authenticated)
-exports.updateProfile = async (req, res) => {
-    try {
-        const authUserId = req.user && req.user.id ? Number(req.user.id) : null;
-        const userId = parseInt(req.params.userId);
-        
-        if (authUserId !== userId) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
-        const { bio, avatarUrl } = req.body;
-        
-        const updatedUser = await prisma.user.update({
-            where: { id: userId },
-            data: { bio, avatarUrl },
-        });
-        
-        res.json(updatedUser);
-    } catch (err) {
-        res.status(500).json({ error: err.message });   
-      
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const authUserId = req.user && req.user.id ? Number(req.user.id) : null;
+    const userId = parseInt(req.params.userId);
+
+    if (authUserId !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
     }
+    const { bio, avatarUrl } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { bio, avatarUrl } as any,
+    });
+
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // DELETE profile (authenticated)
-exports.deleteProfile = async (req, res) => {
+export const deleteProfile = async (req: Request, res: Response) => {
   try {
     const authUserId = req.user && req.user.id ? Number(req.user.id) : null;
     const userId = parseInt(req.params.userId);
@@ -71,7 +77,7 @@ exports.deleteProfile = async (req, res) => {
 };
 
 // GET authenticated user's profile
-exports.getMyProfile = async (req, res) => {
+export const getMyProfile = async (req: Request, res: Response) => {
   try {
     const authUserId = req.user && req.user.id ? Number(req.user.id) : null;
 
@@ -87,7 +93,7 @@ exports.getMyProfile = async (req, res) => {
         bio: true,
         avatarUrl: true,
         createdAt: true,
-      },
+      } as any,
     });
 
     res.json(user);
@@ -97,7 +103,7 @@ exports.getMyProfile = async (req, res) => {
 };
 
 // DELETE authenticated user's profile
-exports.deleteMyProfile = async (req, res) => {
+export const deleteMyProfile = async (req: Request, res: Response) => {
   try {
     const authUserId = req.user && req.user.id ? Number(req.user.id) : null;
 
@@ -117,42 +123,8 @@ exports.deleteMyProfile = async (req, res) => {
 
 // Additional profile-related controllers can be added here
 
-exports.sendDirectMessage = async (req, res) => {
-  try {
-    const senderId = getAuthUserId(req);
-    const { receiverId, content, postId } = req.body;
-
-    if (!senderId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    if (!receiverId || !content) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    const receiver = await prisma.user.findUnique({
-      where: { id: Number(receiverId) },
-    });
-    if (!receiver) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const message = await prisma.message.create({
-      data: {
-        senderId,
-        receiverId: Number(receiverId),
-        content,
-        postId: postId ? Number(postId) : null,
-      },
-    });
-
-    res.status(201).json({ message: "Message sent", dm: message });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
 // Helper function to check if two users are friends
-async function areFriends(userId1, userId2) {
+async function areFriends(userId1: number, userId2: number) {
   const friendship = await prisma.friendship.findFirst({
     where: {
       OR: [
@@ -164,7 +136,7 @@ async function areFriends(userId1, userId2) {
   return Boolean(friendship);
 }
 
-exports.sendDirectMessage = async (req, res) => {
+export const sendDirectMessage = async (req: Request, res: Response) => {
   try {
     const senderId = getAuthUserId(req);
     const receiverId = Number(req.body.receiverId);
@@ -179,9 +151,7 @@ exports.sendDirectMessage = async (req, res) => {
       return res.status(400).json({ message: "Invalid receiver" });
     }
     if (!content && !postId) {
-      return res
-        .status(400)
-        .json({ message: "Message or postId is required" });
+      return res.status(400).json({ message: "Message or postId is required" });
     }
 
     const receiver = await prisma.user.findUnique({
