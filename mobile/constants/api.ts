@@ -30,6 +30,8 @@ export const API_ENDPOINTS = {
     `${BASE_URL}/api/follow/followers/${userId}`,
   GET_FOLLOWING: (userId: string | number) =>
     `${BASE_URL}/api/follow/following/${userId}`,
+
+  REPOST: (postId: string | number) => `${BASE_URL}/api/post/${postId}/repost`,
 };
 
 export const API_CONFIG = {
