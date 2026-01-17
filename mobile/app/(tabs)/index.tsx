@@ -131,8 +131,10 @@ export default function HomeScreen() {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"all" | "following">("all");
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = useCallback(async () => {
+    setError(null);
     try {
       let url = API_ENDPOINTS.GET_POSTS;
       const headers: Record<string, string> = {};
@@ -152,12 +154,17 @@ export default function HomeScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        setPosts(data);
+        const ordered = Array.isArray(data)
+          ? [...data].reverse()
+          : [];
+        setPosts(ordered);
       } else {
         console.error("Failed to fetch posts:", data);
+        setError("Gagal memuat posts");
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
+      setError("Tidak bisa memuat posts sekarang");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -351,6 +358,12 @@ export default function HomeScreen() {
             Home
           </ThemedText>
         </View>
+
+        {error && (
+          <View style={styles.errorBanner}>
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          </View>
+        )}
 
         <FlatList
           data={posts}
@@ -626,6 +639,22 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     opacity: 0.5,
+  },
+  errorBanner: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "#ffebee",
+    borderWidth: 1,
+    borderColor: "#f5c6cb",
+  },
+  errorText: {
+    color: "#c62828",
+    fontSize: 14,
+    fontWeight: "600",
   },
   tabContainer: {
     flexDirection: "row",
