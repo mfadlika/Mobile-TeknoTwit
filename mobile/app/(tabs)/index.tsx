@@ -133,6 +133,13 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<"all" | "following">("all");
   const [error, setError] = useState<string | null>(null);
 
+  const invalidateSession = useCallback(async () => {
+    await AsyncStorage.multiRemove(["token", "userId"]);
+    setAuthToken(null);
+    setAuthUserId(null);
+    router.replace("/login");
+  }, [router]);
+
   const fetchPosts = useCallback(async () => {
     setError(null);
     try {
@@ -153,10 +160,14 @@ export default function HomeScreen() {
       const response = await fetch(url, { headers });
       const data = await response.json();
 
+      if (response.status === 401) {
+        setError("Sesi berakhir. Silakan login ulang.");
+        await invalidateSession();
+        return;
+      }
+
       if (response.ok) {
-        const ordered = Array.isArray(data)
-          ? [...data].reverse()
-          : [];
+        const ordered = Array.isArray(data) ? [...data].reverse() : [];
         setPosts(ordered);
       } else {
         console.error("Failed to fetch posts:", data);
@@ -169,7 +180,7 @@ export default function HomeScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [activeTab, authToken]);
+  }, [activeTab, authToken, invalidateSession]);
 
   useEffect(() => {
     const loadAuth = async () => {
@@ -231,6 +242,12 @@ export default function HomeScreen() {
 
       const data = await response.json();
 
+      if (response.status === 401) {
+        Alert.alert("Error", "Session expired. Please login again.");
+        await invalidateSession();
+        return;
+      }
+
       if (!response.ok) {
         Alert.alert("Error", data.message || "Failed to send post.");
         return;
@@ -262,8 +279,8 @@ export default function HomeScreen() {
     // Optimistic update
     setPosts((prev) =>
       prev.map((p) =>
-        p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p
-      )
+        p.id === postId ? { ...p, likes: (p.likes || 0) + 1 } : p,
+      ),
     );
 
     try {
@@ -275,10 +292,23 @@ export default function HomeScreen() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${storedToken}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
+
+      if (response.status === 401) {
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, likes: Math.max(0, (p.likes || 1) - 1) }
+              : p,
+          ),
+        );
+        Alert.alert("Error", "Session expired. Please login again.");
+        await invalidateSession();
+        return;
+      }
 
       if (response.status === 409) {
         // Already liked, so unlike
@@ -289,7 +319,7 @@ export default function HomeScreen() {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
-          }
+          },
         );
 
         const unlikeData = await unlikeResponse.json();
@@ -297,16 +327,27 @@ export default function HomeScreen() {
         if (unlikeResponse.ok) {
           setPosts((prev) =>
             prev.map((p) =>
-              p.id === postId ? { ...p, likes: unlikeData.likes || 0 } : p
-            )
+              p.id === postId ? { ...p, likes: unlikeData.likes || 0 } : p,
+            ),
           );
+        } else if (unlikeResponse.status === 401) {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? { ...p, likes: Math.max(0, (p.likes || 1) - 1) }
+                : p,
+            ),
+          );
+          Alert.alert("Error", "Session expired. Please login again.");
+          await invalidateSession();
+          return;
         }
       } else if (response.ok) {
         // Successfully liked
         setPosts((prev) =>
           prev.map((p) =>
-            p.id === postId ? { ...p, likes: data.likes || p.likes || 0 } : p
-          )
+            p.id === postId ? { ...p, likes: data.likes || p.likes || 0 } : p,
+          ),
         );
       } else {
         // Revert optimistic update on error
@@ -314,8 +355,8 @@ export default function HomeScreen() {
           prev.map((p) =>
             p.id === postId
               ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) }
-              : p
-          )
+              : p,
+          ),
         );
         Alert.alert("Error", data.message || "Failed to like post.");
       }
@@ -324,8 +365,10 @@ export default function HomeScreen() {
       // Revert optimistic update
       setPosts((prev) =>
         prev.map((p) =>
-          p.id === postId ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) } : p
-        )
+          p.id === postId
+            ? { ...p, likes: Math.max(0, (p.likes || 0) - 1) }
+            : p,
+        ),
       );
       Alert.alert("Error", "Cannot like post right now.");
     }
@@ -667,9 +710,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     position: "relative",
   },
-  tabActive: {
-    // Active tab styling handled by text and indicator
-  },
+  tabActive: {},
   tabText: {
     fontSize: 15,
     fontWeight: "600",
