@@ -34,6 +34,7 @@ interface Post {
   createdAt: string;
   user: User | null;
   likes?: number;
+  reposts?: number;
 }
 
 function formatTimestamp(dateString: string): string {
@@ -56,11 +57,13 @@ function PostCard({
   onPress,
   onToggleLike,
   onUserPress,
+  onToggleRepost,
 }: {
   post: Post;
   onPress?: () => void;
   onToggleLike?: (postId: number) => void;
   onUserPress?: (userId: number) => void;
+  onToggleRepost?: (postId: number) => void;
 }) {
   return (
     <TouchableOpacity
@@ -112,6 +115,18 @@ function PostCard({
           >
             <ThemedText style={styles.likeIcon}>❤️</ThemedText>
             <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              onToggleRepost?.(post.id);
+            }}
+          >
+            <ThemedText style={styles.likeIcon}>🔄</ThemedText>
+            <ThemedText style={styles.likeCount}>
+              {post.reposts || 0}
+            </ThemedText>
           </TouchableOpacity>
         </View>
       </ThemedView>
@@ -374,6 +389,114 @@ export default function HomeScreen() {
     }
   };
 
+  const handleToggleRepost = async (postId: number) => {
+    const storedToken = authToken || (await AsyncStorage.getItem("token"));
+
+    if (!storedToken) {
+      Alert.alert("Error", "Please login to repost.");
+      return;
+    }
+
+    // Optimistic increment
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId ? { ...p, reposts: (p.reposts || 0) + 1 } : p,
+      ),
+    );
+
+    try {
+      const repostUrl = API_ENDPOINTS.REPOST(postId);
+      const res = await fetch(repostUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${storedToken}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.status === 401) {
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, reposts: Math.max(0, (p.reposts || 1) - 1) }
+              : p,
+          ),
+        );
+        Alert.alert("Error", "Session expired. Please login again.");
+        await invalidateSession();
+        return;
+      }
+
+      if (res.status === 409) {
+        // Already reposted, so unrepost
+        const unrepostRes = await fetch(repostUrl, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${storedToken}` },
+        });
+        const unrepostData = await unrepostRes.json();
+
+        if (unrepostRes.ok) {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    reposts:
+                      typeof unrepostData.reposts === "number"
+                        ? unrepostData.reposts
+                        : Math.max(0, (p.reposts || 1) - 1),
+                  }
+                : p,
+            ),
+          );
+        } else if (unrepostRes.status === 401) {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? { ...p, reposts: Math.max(0, (p.reposts || 1) - 1) }
+                : p,
+            ),
+          );
+          Alert.alert("Error", "Session expired. Please login again.");
+          await invalidateSession();
+          return;
+        }
+      } else if (res.ok) {
+        // Successfully reposted
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, reposts: data.reposts || p.reposts || 1 }
+              : p,
+          ),
+        );
+      } else {
+        // Revert optimistic update
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, reposts: Math.max(0, (p.reposts || 0) - 1) }
+              : p,
+          ),
+        );
+        Alert.alert("Error", data.message || "Failed to repost.");
+      }
+    } catch (error) {
+      console.error("Error toggling repost:", error);
+      // Revert optimistic update
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, reposts: Math.max(0, (p.reposts || 0) - 1) }
+            : p,
+        ),
+      );
+      Alert.alert("Error", "Cannot repost right now.");
+    }
+  };
+
   if (isLoading) {
     return (
       <ThemedView style={styles.container}>
@@ -415,6 +538,7 @@ export default function HomeScreen() {
               post={item}
               onPress={() => router.push(`/post/${item.id}`)}
               onToggleLike={handleToggleLike}
+              onToggleRepost={handleToggleRepost}
               onUserPress={(userId) => router.push(`/user/${userId}`)}
             />
           )}

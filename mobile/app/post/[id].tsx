@@ -28,6 +28,7 @@ interface Post {
   createdAt: string;
   user: User | null;
   likes?: number;
+  reposts?: number;
 }
 
 function formatTimestamp(dateString: string): string {
@@ -51,6 +52,7 @@ export default function PostDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  const [isReposting, setIsReposting] = useState(false);
   const postId = useMemo(() => (id ? String(id) : null), [id]);
 
   const fetchPost = async () => {
