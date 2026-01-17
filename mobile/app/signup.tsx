@@ -27,7 +27,9 @@ export default function SignupScreen() {
   const EMAIL_DOMAIN = "@teknokrat.ac.id";
 
   const handleSignup = async () => {
-    if (!username || !password || !confirmPassword) {
+    const trimmedUsername = username.trim();
+
+    if (!trimmedUsername || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -42,16 +44,30 @@ export default function SignupScreen() {
       return;
     }
 
+    const usernamePattern = /^[a-zA-Z0-9_]{3,20}$/;
+    if (!usernamePattern.test(trimmedUsername)) {
+      Alert.alert(
+        "Error",
+        "Username must be 3-20 characters and contain only letters, numbers, or underscore"
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const localPart = username.trim().split("@")[0];
+      const localPart = trimmedUsername.split("@")[0];
       const signupEmail = `${localPart}${EMAIL_DOMAIN}`;
       const response = await fetch(API_ENDPOINTS.SIGNUP, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: username, email: signupEmail, password }),
+        body: JSON.stringify({
+          name: trimmedUsername,
+          username: localPart,
+          email: signupEmail,
+          password,
+        }),
       });
 
       const data = await response.json();
@@ -62,10 +78,10 @@ export default function SignupScreen() {
         return;
       }
 
-      Alert.alert("Success", "Account created successfully!", [
+      Alert.alert("Success", "Account created. Please sign in.", [
         {
           text: "OK",
-          onPress: () => router.replace("/(tabs)"),
+          onPress: () => router.replace("/login"),
         },
       ]);
     } catch (error) {
