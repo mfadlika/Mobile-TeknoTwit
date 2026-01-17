@@ -6,12 +6,14 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface User {
   id: number;
@@ -50,6 +52,7 @@ export default function PostDetailScreen() {
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
   const postId = useMemo(() => (id ? String(id) : null), [id]);
 
   const fetchPost = async () => {
@@ -80,13 +83,90 @@ export default function PostDetailScreen() {
     fetchPost();
   };
 
+  const handleToggleLike = async () => {
+    if (!postId || !post) return;
+
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert("Error", "Please login to like posts.");
+      return;
+    }
+
+    setIsLiking(true);
+
+    // Optimistic increment
+    setPost((prev) =>
+      prev ? { ...prev, likes: (prev.likes || 0) + 1 } : prev,
+    );
+
+    try {
+      const likeUrl = `${API_ENDPOINTS.CREATE_POST}/${postId}/like`;
+      const res = await fetch(likeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.status === 409) {
+
+        const unlikeRes = await fetch(likeUrl, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const unlikeData = await unlikeRes.json();
+
+        if (unlikeRes.ok) {
+          setPost((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  likes:
+                    typeof unlikeData.likes === "number"
+                      ? unlikeData.likes
+                      : Math.max(0, (prev.likes || 1) - 1),
+                }
+              : prev,
+          );
+        }
+      } else if (res.ok) {
+        setPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                likes:
+                  typeof data.likes === "number" ? data.likes : prev.likes || 1,
+              }
+            : prev,
+        );
+      } else {
+
+        setPost((prev) =>
+          prev ? { ...prev, likes: Math.max(0, (prev.likes || 1) - 1) } : prev,
+        );
+        Alert.alert("Error", data.message || "Failed to like post.");
+      }
+    } catch (error) {
+
+      setPost((prev) =>
+        prev ? { ...prev, likes: Math.max(0, (prev.likes || 1) - 1) } : prev,
+      );
+      Alert.alert("Error", "Cannot like post right now.");
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <ThemedView style={styles.container}>
         <Stack.Screen
           options={{
             title: "Post",
-            // headerBackTitleVisible: false,
+  
             headerBackTitle: "Back",
           }}
         />
@@ -103,7 +183,7 @@ export default function PostDetailScreen() {
         <Stack.Screen
           options={{
             title: "Post",
-            // headerBackTitleVisible: false,
+       
             headerBackTitle: "Back",
           }}
         />
@@ -128,7 +208,7 @@ export default function PostDetailScreen() {
       <Stack.Screen
         options={{
           title: "Post",
-          //   headerBackTitleVisible: false,
+      
           headerBackTitle: "Back",
         }}
       />
@@ -162,7 +242,11 @@ export default function PostDetailScreen() {
         <ThemedText style={styles.bodyText}>{post.content}</ThemedText>
 
         <View style={styles.footerRow}>
-          <TouchableOpacity style={styles.likeButton}>
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={handleToggleLike}
+            disabled={isLiking}
+          >
             <ThemedText style={styles.likeIcon}>❤️</ThemedText>
             <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
           </TouchableOpacity>
