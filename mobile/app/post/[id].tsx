@@ -332,7 +332,7 @@ export default function PostDetailScreen() {
             onPress={handleToggleRepost}
             disabled={isReposting}
           >
-            <Feather name="repeat-2" size={18} color="#666" />
+            <Feather name="repeat" size={18} color="#666" />
             <ThemedText style={styles.likeCount}>
               {post.reposts || 0}
             </ThemedText>

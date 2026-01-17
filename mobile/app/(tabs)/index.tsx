@@ -124,7 +124,7 @@ function PostCard({
               onToggleRepost?.(post.id);
             }}
           >
-            <Feather name="repeat-2" size={18} color="#666" />
+            <Feather name="repeat" size={18} color="#666" />
             <ThemedText style={styles.likeCount}>
               {post.reposts || 0}
             </ThemedText>
