@@ -157,6 +157,86 @@ export default function PostDetailScreen() {
     }
   };
 
+  const handleToggleRepost = async () => {
+    if (!postId || !post) return;
+
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert("Error", "Please login to repost.");
+      return;
+    }
+
+    setIsReposting(true);
+
+    // Optimistic increment
+    setPost((prev) =>
+      prev ? { ...prev, reposts: (prev.reposts || 0) + 1 } : prev,
+    );
+
+    try {
+      const repostUrl = API_ENDPOINTS.REPOST(postId);
+      const res = await fetch(repostUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.status === 409) {
+        const unrepostRes = await fetch(repostUrl, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const unrepostData = await unrepostRes.json();
+
+        if (unrepostRes.ok) {
+          setPost((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  reposts:
+                    typeof unrepostData.reposts === "number"
+                      ? unrepostData.reposts
+                      : Math.max(0, (prev.reposts || 1) - 1),
+                }
+              : prev,
+          );
+        }
+      } else if (res.ok) {
+        setPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                reposts:
+                  typeof data.reposts === "number"
+                    ? data.reposts
+                    : prev.reposts || 1,
+              }
+            : prev,
+        );
+      } else {
+        setPost((prev) =>
+          prev
+            ? { ...prev, reposts: Math.max(0, (prev.reposts || 1) - 1) }
+            : prev,
+        );
+        Alert.alert("Error", data.message || "Failed to repost.");
+      }
+    } catch (error) {
+      setPost((prev) =>
+        prev
+          ? { ...prev, reposts: Math.max(0, (prev.reposts || 1) - 1) }
+          : prev,
+      );
+      Alert.alert("Error", "Cannot repost right now.");
+    } finally {
+      setIsReposting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <ThemedView style={styles.container}>
@@ -246,6 +326,16 @@ export default function PostDetailScreen() {
           >
             <ThemedText style={styles.likeIcon}>❤️</ThemedText>
             <ThemedText style={styles.likeCount}>{post.likes || 0}</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={handleToggleRepost}
+            disabled={isReposting}
+          >
+            <ThemedText style={styles.likeIcon}>🔄</ThemedText>
+            <ThemedText style={styles.likeCount}>
+              {post.reposts || 0}
+            </ThemedText>
           </TouchableOpacity>
         </View>
       </ScrollView>
