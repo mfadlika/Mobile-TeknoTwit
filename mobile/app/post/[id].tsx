@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -168,7 +169,6 @@ export default function PostDetailScreen() {
 
     setIsReposting(true);
 
-    // Optimistic increment
     setPost((prev) =>
       prev ? { ...prev, reposts: (prev.reposts || 0) + 1 } : prev,
     );
@@ -332,7 +332,7 @@ export default function PostDetailScreen() {
             onPress={handleToggleRepost}
             disabled={isReposting}
           >
-            <ThemedText style={styles.likeIcon}>🔄</ThemedText>
+            <Feather name="repeat-2" size={18} color="#666" />
             <ThemedText style={styles.likeCount}>
               {post.reposts || 0}
             </ThemedText>

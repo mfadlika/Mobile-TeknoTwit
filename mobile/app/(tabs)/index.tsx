@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { API_ENDPOINTS } from "@/constants/api";
 import { Colors } from "@/constants/theme";
+import { Feather } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/use-theme-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -123,7 +124,7 @@ function PostCard({
               onToggleRepost?.(post.id);
             }}
           >
-            <ThemedText style={styles.likeIcon}>🔄</ThemedText>
+            <Feather name="repeat-2" size={18} color="#666" />
             <ThemedText style={styles.likeCount}>
               {post.reposts || 0}
             </ThemedText>
