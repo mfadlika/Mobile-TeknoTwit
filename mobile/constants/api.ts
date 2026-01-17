@@ -1,10 +1,6 @@
 // API Configuration
 import Constants from "expo-constants";
 
-// Get local IP for development (replace 'localhost' with your computer's IP address)
-// For iOS simulator: use 'localhost'
-// For Android emulator: use '10.0.2.2'
-// For physical device: use your computer's IP (e.g., '192.168.1.x')
 const BASE_URL =
   Constants.expoConfig?.extra?.apiBaseUrl ||
   process.env.EXPO_PUBLIC_API_BASE_URL ||
