@@ -48,7 +48,7 @@ export default function SignupScreen() {
     if (!usernamePattern.test(trimmedUsername)) {
       Alert.alert(
         "Error",
-        "Username must be 3-20 characters and contain only letters, numbers, or underscore"
+        "Username must be 3-20 characters and contain only letters, numbers, or underscore",
       );
       return;
     }
@@ -88,7 +88,7 @@ export default function SignupScreen() {
       setIsLoading(false);
       Alert.alert(
         "Error",
-        "Cannot connect to server. Please check your connection."
+        "Cannot connect to server. Please check your connection.",
       );
     }
   };
