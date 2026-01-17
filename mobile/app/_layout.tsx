@@ -21,7 +21,6 @@ function RootLayoutContent() {
         <Stack.Screen name="signup" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="user" options={{ headerShown: false }} />
-        <Stack.Screen name="post" options={{ headerShown: false }} />
         <Stack.Screen name="following" options={{ headerShown: false }} />
         <Stack.Screen name="followers" options={{ headerShown: false }} />
         <Stack.Screen

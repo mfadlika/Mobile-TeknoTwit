@@ -42,45 +42,39 @@ export default function ProfileScreen() {
 
   const fetchUserData = async () => {
     try {
-      // Get logged-in user ID from AsyncStorage
       const userId = await AsyncStorage.getItem("userId");
 
       if (!userId) {
-        // No user logged in, redirect to login
         router.replace("/login");
         return;
       }
 
-      // Fetch user data by ID
       const userResponse = await fetch(API_ENDPOINTS.GET_USER_BY_ID(userId));
       const userData = await userResponse.json();
 
       if (userResponse.ok) {
         setUser(userData);
 
-        // Fetch posts count for this user
         const postsResponse = await fetch(API_ENDPOINTS.GET_POSTS);
         const posts = await postsResponse.json();
 
         if (postsResponse.ok) {
           const userPosts = posts.filter(
-            (post: any) => post.userId === parseInt(userId)
+            (post: any) => post.userId === parseInt(userId),
           );
           setPostCount(userPosts.length);
         }
 
-        // Fetch followers count
         const followersResponse = await fetch(
-          API_ENDPOINTS.GET_FOLLOWERS(userId)
+          API_ENDPOINTS.GET_FOLLOWERS(userId),
         );
         if (followersResponse.ok) {
           const followersData = await followersResponse.json();
           setFollowersCount(followersData.length);
         }
 
-        // Fetch following count
         const followingResponse = await fetch(
-          API_ENDPOINTS.GET_FOLLOWING(userId)
+          API_ENDPOINTS.GET_FOLLOWING(userId),
         );
         if (followingResponse.ok) {
           const followingData = await followingResponse.json();
@@ -96,7 +90,6 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     fetchUserData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -113,7 +106,6 @@ export default function ProfileScreen() {
       {
         text: "Logout",
         onPress: async () => {
-          // Clear stored tokens/user data
           await AsyncStorage.removeItem("token");
           await AsyncStorage.removeItem("userId");
 

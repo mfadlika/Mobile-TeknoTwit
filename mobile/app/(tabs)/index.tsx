@@ -517,13 +517,19 @@ export default function HomeScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-      style={styles.container}
+      style={{ flex: 1 }}
     >
       <ThemedView style={styles.container}>
         <View style={styles.header}>
           <ThemedText type="title" style={styles.title}>
             Home
           </ThemedText>
+          {/* <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => router.push("/(tabs)/profile")}
+          >
+            <ThemedText style={styles.profileButtonText}>Profile</ThemedText>
+          </TouchableOpacity> */}
         </View>
 
         {error && (
@@ -682,13 +688,27 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
   },
+  profileButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "#007AFF",
+    borderRadius: 8,
+  },
+  profileButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 100,
   },
   listHeader: {
     paddingHorizontal: 16,
