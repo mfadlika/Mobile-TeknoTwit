@@ -47,7 +47,6 @@ function formatTimestamp(dateString: string): string {
 }
 
 export default function PostDetailScreen() {
-  const colorScheme = useColorScheme();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,7 +111,6 @@ export default function PostDetailScreen() {
       const data = await res.json();
 
       if (res.status === 409) {
-
         const unlikeRes = await fetch(likeUrl, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -143,14 +141,12 @@ export default function PostDetailScreen() {
             : prev,
         );
       } else {
-
         setPost((prev) =>
           prev ? { ...prev, likes: Math.max(0, (prev.likes || 1) - 1) } : prev,
         );
         Alert.alert("Error", data.message || "Failed to like post.");
       }
     } catch (error) {
-
       setPost((prev) =>
         prev ? { ...prev, likes: Math.max(0, (prev.likes || 1) - 1) } : prev,
       );
@@ -166,7 +162,7 @@ export default function PostDetailScreen() {
         <Stack.Screen
           options={{
             title: "Post",
-  
+
             headerBackTitle: "Back",
           }}
         />
@@ -183,7 +179,7 @@ export default function PostDetailScreen() {
         <Stack.Screen
           options={{
             title: "Post",
-       
+
             headerBackTitle: "Back",
           }}
         />
@@ -208,7 +204,7 @@ export default function PostDetailScreen() {
       <Stack.Screen
         options={{
           title: "Post",
-      
+
           headerBackTitle: "Back",
         }}
       />
